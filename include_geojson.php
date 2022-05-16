@@ -7,6 +7,7 @@ $json = json_decode(file_get_contents(__DIR__ . '/raw/map/20210324.json'), true)
 exit();
 
 $count = [];
+
 foreach (glob(__DIR__ . '/raw/*.csv') as $csvfile) {
     
     $fid = fopen($csvfile,'r');
