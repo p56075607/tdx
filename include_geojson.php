@@ -1,9 +1,9 @@
 <?php
-ini_set('memory_limit', '2G');
+#ini_set('memory_limit', '4G');
 
 # 加入村里界圖的 geojson
 $json = json_decode(file_get_contents(__DIR__ . '/raw/map/20210324.json'), true);
-print_r($json);
+#print_r($json);
 exit();
 
 $count = [];
