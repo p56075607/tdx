@@ -3,37 +3,30 @@
 
 # 加入村里界圖的 geojson
 $json = json_decode(file_get_contents(__DIR__ . '/raw/map/20210324.json'), true);
-#print_r($json);
-exit();
-
-$count = [];
-
-foreach (glob(__DIR__ . '/raw/*.csv') as $csvfile) {
-    
-    $fid = fopen($csvfile,'r');
-    $header = fgetcsv($fid,2048);
-    fgetcsv($fid,2048); # 略過第二行英文欄位名
-    while($line = fgetcsv($fid,2048)){
-        $data = array_combine($header,$line);
-        if(!isset($count[$data['里代碼']])){ # 檢查是否有里代碼並初始化
-            $count[$data['里代碼']] = [
-                'dead' => 0,
-                'hurt' => 0,
-            ];
-        }
-        $count[$data['里代碼']]['dead'] += $data['死亡人數'];
-        $count[$data['里代碼']]['hurt'] += $data['受傷人數(含2~30日內死亡)'];
-        
+$pool = [];
+foreach($json['features'] AS $f) {
+    if('未編定村里' === $f['properties']['NOTE']) {
+        continue;
     }
-    
+    $pool[$f['properties']['VILLCODE']] = $f['properties']['COUNTYNAME'] . $f['properties']['TOWNNAME'] . $f['properties']['VILLNAME']; # .連接字串用
 }
-uasort($count, 'cmp');
 
-function cmp($a, $b) {
-    if ($a['hurt'] == $b['hurt']) {
-        return 0;
+$count = [
+    'found' => 0,
+    'notfound' => 0,
+];
+foreach (glob(__DIR__ . '/raw/*.csv') as $csvFile) {
+    $fh = fopen($csvFile, 'r');
+    $header = fgetcsv($fh, 2048);
+    fgetcsv($fh, 2048);
+    while ($line = fgetcsv($fh, 2048)) {
+        $data = array_combine($header, $line);
+        if(isset($pool[$data['里代碼']])) {
+            ++$count['found'];
+        } else {
+            ++$count['notfound'];
+        }
     }
-    return ($a['hurt'] > $b['hurt']) ? -1 : 1;
 }
 
 print_r($count);
